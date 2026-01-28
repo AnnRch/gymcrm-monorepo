@@ -7,6 +7,7 @@ import com.gymcrm.gym_crm_spring.dto.TrainerProfileUpdateResponse;
 import com.gymcrm.gym_crm_spring.dto.TrainerShortResponse;
 import com.gymcrm.gym_crm_spring.dto.TrainerTrainingsListResponse;
 import com.gymcrm.gym_crm_spring.facade.GymFacade;
+import com.gymcrm.gym_crm_spring.service.TrainerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -16,17 +17,11 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -39,6 +34,7 @@ import java.util.List;
 public class TrainerController {
 
     private final GymFacade gymFacade;
+    private final TrainerService trainerService;
 
     @Operation(summary = "Get Trainer Profile", description = "Returns Trainer profile information by username")
     @ApiResponses({
@@ -106,5 +102,13 @@ public class TrainerController {
             @Valid @RequestBody TrainerActivationRequest request
     ) {
         gymFacade.activateTrainer(request);
+    }
+
+    @DeleteMapping("/{username}")
+    public ResponseEntity<String> deleteTrainer(@PathVariable("username") String username){
+        gymFacade.deleteTrainerProfile(username);
+        return trainerService.findByUsername(username).isEmpty()
+                ? ResponseEntity.ok("Successful")
+                : ResponseEntity.badRequest().body("Failed");
     }
 }

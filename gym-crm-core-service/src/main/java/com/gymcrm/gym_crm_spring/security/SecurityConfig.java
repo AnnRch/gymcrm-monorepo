@@ -52,7 +52,7 @@ public class SecurityConfig {
                                 "/webjars/**",
                                 "/swagger-resources", "/swagger-resources/**"
                         ).permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/register/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .anyRequest().authenticated()
                 )

@@ -1,6 +1,8 @@
 package com.gymcrm.gym_crm_spring.dao;
 
+import com.gymcrm.gym_crm_spring.domain.Trainee;
 import com.gymcrm.gym_crm_spring.domain.Trainer;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
@@ -36,5 +38,15 @@ public class TrainerDao extends AbstractDaoJpa<Trainer> {
                 .setParameter("l", lastName.toLowerCase())
                 .getResultStream()
                 .findFirst();
+    }
+
+    public void deleteByUsername(String username) {
+        findByUsername(username).ifPresent(trainer -> {
+            for (Trainee trainee : trainer.getAssignedTrainees()) {
+                trainee.getAssignedTrainers().remove(trainer);
+            }
+            trainer.getAssignedTrainees().clear();
+            getEntityManager().remove(trainer);
+        });
     }
 }

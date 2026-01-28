@@ -10,9 +10,11 @@ import com.gymcrm.gym_crm_spring.dto.TrainerProfileUpdateResponse;
 import com.gymcrm.gym_crm_spring.dto.TrainerShortResponse;
 import com.gymcrm.gym_crm_spring.exception.TraineeNotFoundException;
 import com.gymcrm.gym_crm_spring.exception.TrainerNotFoundException;
+import com.gymcrm.gym_crm_spring.messaging.WorkloadMessageProducer;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -126,4 +128,9 @@ public class TrainerService extends AbstractService<Trainer> {
         dao.save(trainer);
     }
 
+    @Transactional
+    public void deleteByUserName(String username){
+        dao.deleteByUsername(username);
+
+    }
 }

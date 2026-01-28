@@ -39,6 +39,12 @@ public class TrainingService extends AbstractService<Training> {
         dao.save(training);
     }
 
+    public int getDurationByTrainerAndDate(String trainerUsername, LocalDate from) {
+        List<Training> trainings = dao.findByCriteriaForTrainer(trainerUsername, from, null, null);
+        return trainings.stream()
+                .mapToInt(Training::getTrainingDuration)
+                .sum();
+    }
 }
 
 

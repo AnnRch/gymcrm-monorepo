@@ -24,7 +24,37 @@ public class WorkloadMessageConsumer {
     public void consume(TrainerWorkloadRequest request) {
         try {
             log.info("Received workload message: {}", request);
-            workloadService.updateWorkload(request);
+            workloadService.saveTrainerData(request);
+        } catch (Exception e) {
+            log.error("Failed to process workload message, sending to DLQ", e);
+
+            jmsTemplate.convertAndSend(dlqName, request, message -> {
+                message.setStringProperty("_type", JmsTypes.TRAINER_WORKLOAD_V1);
+                return message;
+            });
+        }
+    }
+
+    @JmsListener(destination = "${trainer.create.workload.queue}")
+    public void consumeTrainerCreate(TrainerWorkloadRequest request){
+        try {
+            log.info("Received workload message about trainer creation: {}", request);
+            workloadService.createTrainerLogic(request);
+        } catch (Exception e) {
+            log.error("Failed to process workload message, sending to DLQ", e);
+
+            jmsTemplate.convertAndSend(dlqName, request, message -> {
+                message.setStringProperty("_type", JmsTypes.TRAINER_WORKLOAD_V1);
+                return message;
+            });
+        }
+    }
+
+    @JmsListener(destination = "${trainer.delete.workload.queue}")
+    public void consumeTrainerDelete(TrainerWorkloadRequest request){
+        try {
+            log.info("Received workload message about trainer deletion: {}", request);
+            workloadService.deleteTrainer(request.getUsername());
         } catch (Exception e) {
             log.error("Failed to process workload message, sending to DLQ", e);
 

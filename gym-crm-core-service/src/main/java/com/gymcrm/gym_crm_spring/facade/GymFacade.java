@@ -111,6 +111,15 @@ public class GymFacade {
 
         trainerService.save(trainer);
 
+        //sync with workload
+        TrainerWorkloadRequest trainerWorkloadRequest = TrainerWorkloadRequest.builder()
+                .username(trainer.getUser().getUsername())
+                .firstName(trainer.getUser().getFirstName())
+                .lastName(trainer.getUser().getLastName())
+                .isActive(trainer.getUser().getActive())
+                .build();
+
+        workloadMessageProducer.sendWorkloadCreateTrainer(trainerWorkloadRequest);
         return new TrainerRegistrationResponse(user.getUsername(), rawPassword);
     }
 
@@ -205,6 +214,19 @@ public class GymFacade {
         traineeService.deleteByUsername(username);
     }
 
+    @Transactional
+    public void deleteTrainerProfile(String username){
+       Trainer trainer = trainerService.findByUsername(username)
+               .orElseThrow(() -> new TrainerNotFoundException(username));
+
+       trainerService.deleteByUserName(trainer.getUser().getUsername());
+
+       TrainerWorkloadRequest request = TrainerWorkloadRequest.builder()
+               .username(username)
+               .build();
+       workloadMessageProducer.sendWorkloadDeleteTrainer(request);
+    }
+
     @Transactional(readOnly = true)
     public TrainerProfileResponse getTrainerProfile(String username) {
         return trainerService.getProfile(username);
@@ -258,6 +280,7 @@ public class GymFacade {
             Training training
     ) {
         return new TrainerTrainingsListResponse.TrainerTrainingResponse(
+                training.getId(),
                 training.getTrainingName(),
                 training.getTrainingDate(),
                 training.getTrainingType().getTrainingTypeName(),
@@ -273,6 +296,14 @@ public class GymFacade {
 
         var trainer = trainerService.findByUsername(request.trainerUsername())
                 .orElseThrow(() -> new TrainerNotFoundException(request.trainerUsername()));
+
+        int durationForRequestedDate = trainingService.getDurationByTrainerAndDate(
+                request.trainerUsername(), request.trainingDate()
+        );
+
+        if (durationForRequestedDate + request.trainingDuration() > 8 * 60) {
+            throw new IllegalArgumentException("Trainer's daily working limit exceeded");
+        }
 
         var training = new Training();
         training.setTrainingName(request.trainingName());
@@ -321,7 +352,12 @@ public class GymFacade {
                 .actionType(ActionType.DELETE)
                 .build();
 
-        workloadMessageProducer.sendWorkloadUpdate(request);
+        try {
+            workloadMessageProducer.sendWorkloadUpdate(request);
+            log.info("Workload message sent for delete trainer {}", request.getUsername());
+        } catch (Exception e) {
+            log.error("Failed to send workload message for trainer {}", request.getUsername(), e);
+        }
     }
 
 

@@ -8,7 +8,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5433:5432"
+      - "5439:5432"
     networks:
       - gymcrm-network
     healthcheck:
@@ -17,6 +17,14 @@ services:
       timeout: 3s
       retries: 10
       start_period: 10s
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    networks:
+      - gymcrm-network
 
   # === ActiveMQ ===
   activemq:

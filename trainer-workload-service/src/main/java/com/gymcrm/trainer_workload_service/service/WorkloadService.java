@@ -7,6 +7,9 @@ import com.gymcrm.trainer_workload_service.entity.TrainerWorkload;
 import com.gymcrm.trainer_workload_service.entity.YearSummary;
 import com.gymcrm.trainer_workload_service.exception.InvalidDeleteException;
 import com.gymcrm.trainer_workload_service.exception.TrainerNotFoundException;
+import com.gymcrm.trainer_workload_service.repository.CommandRepository;
+import com.gymcrm.trainer_workload_service.repository.QueryRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -17,9 +20,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class WorkloadService {
 
     private final Map<String, TrainerWorkload> workloadMap = new ConcurrentHashMap<>();
+    private final CommandRepository commandRepository;
+    private final QueryRepository queryRepository;
 
     public void updateWorkload(TrainerWorkloadRequest request) {
         log.info("Updating workload for trainer: {}", request.getUsername());
@@ -34,7 +40,26 @@ public class WorkloadService {
     }
 
     public TrainerWorkload getWorkload(String username) {
-        return workloadMap.get(username);
+        return queryRepository.findByUsername(username);
+    }
+
+    public void createTrainerLogic(TrainerWorkloadRequest request){
+        TrainerWorkload trainerWorkload = TrainerWorkload.builder()
+                .username(request.getUsername())
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .status(request.getIsActive() ? "ACTIVE" : "INACTIVE")
+                .build();
+
+        commandRepository.createTrainerIfNotExists(trainerWorkload);
+    }
+
+    public void saveTrainerData(TrainerWorkloadRequest request){
+        commandRepository.updateTrainerYearMonthDuration(request);
+    }
+
+    public void deleteTrainer(String username){
+        commandRepository.deleteByUsername(username);
     }
 
     private void handleAdd(TrainerWorkloadRequest request) {
