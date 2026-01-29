@@ -61,7 +61,7 @@ public class CommandRepositoryImpl implements CommandRepository {
     public void updateTrainerYearMonthDuration(TrainerWorkloadRequest request) {
         String username = request.getUsername();
         int year = request.getTrainingDate().getYear();
-        String month = request.getTrainingDate().getMonth().name(); // "JANUARY"
+        String month = request.getTrainingDate().getMonth().name();
         int duration = calculateDuration(request);
 
         if (request.getActionType().name().equalsIgnoreCase("DELETE")) {
