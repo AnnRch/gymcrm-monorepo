@@ -62,6 +62,7 @@ public class TrainerService extends AbstractService<Trainer> {
                 .collect(Collectors.toList());
 
         return new TrainerProfileResponse(
+                user.getUsername(),
                 user.getFirstName(),
                 user.getLastName(),
                 trainer.getSpecialization().getTrainingTypeName(),
@@ -131,6 +132,5 @@ public class TrainerService extends AbstractService<Trainer> {
     @Transactional
     public void deleteByUserName(String username){
         dao.deleteByUsername(username);
-
     }
 }

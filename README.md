@@ -106,7 +106,7 @@ http://localhost:8080/swagger-ui.html
 "firstName": "Ivan",
 "lastName": "Petrov",
 "dateOfBirth": "1995-05-15",
-"address": "Moscow, Lenina st. 10"
+"address": "Kyiv, Svyatoshin, 10"
 }
 
 Нажмите Execute.

@@ -18,7 +18,7 @@ Feature: Trainer Profile Management
     When I update my profile with the following details:
       | firstName | lastName | isActive |
       | Lilechka      | Levada    | true     |
-    Then the response status should be 200
+    Then the trainer response status should be 200
     And the updated profile firstName should be "Lilechka"
 
   @Activation

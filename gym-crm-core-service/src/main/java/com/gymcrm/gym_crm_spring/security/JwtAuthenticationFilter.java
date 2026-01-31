@@ -66,6 +66,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        return path.startsWith("/api/training-types")
+                || path.startsWith("/actuator")
+                || path.startsWith("/api/auth");
+    }
+
     private boolean isAuthenticationRequired(String username) {
         return username != null
                 && SecurityContextHolder.getContext().getAuthentication() == null;
