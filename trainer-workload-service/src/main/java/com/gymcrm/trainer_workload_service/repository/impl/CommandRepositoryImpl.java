@@ -17,6 +17,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 @Repository
@@ -43,11 +44,12 @@ public class CommandRepositoryImpl implements CommandRepository {
 
     @Override
     public void createTrainerIfNotExists(TrainerWorkload trainerWorkload) {
-
-        Query query = new Query(Criteria.where("username").is(trainerWorkload.getUsername()));
+//        Query query = new Query(Criteria.where("username").is(trainerWorkload.getUsername()));
+        Query query = new Query(Criteria.where("_id").is(trainerWorkload.getUsername()));
 
         Update update = new Update()
-                .setOnInsert("username", trainerWorkload.getUsername())
+//                .setOnInsert("username", trainerWorkload.getUsername())
+                .setOnInsert("_id",trainerWorkload.getUsername())
                 .setOnInsert("firstName", trainerWorkload.getFirstName())
                 .setOnInsert("lastName", trainerWorkload.getLastName())
                 .setOnInsert("status", trainerWorkload.getStatus())
@@ -64,12 +66,11 @@ public class CommandRepositoryImpl implements CommandRepository {
         String month = request.getTrainingDate().getMonth().name();
         int duration = calculateDuration(request);
 
-        if (request.getActionType().name().equalsIgnoreCase("DELETE")) {
-            deleteCheck(request);
-        }
+//        if (request.getActionType().name().equalsIgnoreCase("DELETE")) {
+//            deleteCheck(request);
+//        }
 
         Query query = new Query(Criteria.where("_id").is(username));
-
         Update update = new Update()
                 .inc("years.$[yearIdx].months.$[monthIdx].trainingSummaryDuration", duration)
                 .filterArray(Criteria.where("yearIdx.year").is(year))
@@ -134,27 +135,28 @@ public class CommandRepositoryImpl implements CommandRepository {
             default -> 0;
         };
     }
-        private void addYearMonthIfNotExist (String username,int year, String month,int duration){
-            Query yearQuery = new Query(Criteria.where("_id").is(username).and("years.year").is(year));
-            boolean yearExists = mongoTemplate.exists(yearQuery, TrainerWorkload.class);
 
-            if (yearExists) {
-                mongoTemplate.updateFirst(
-                        yearQuery,
-                        new Update().push("years.$.months", new MonthSummary(month, duration)),
-                        TrainerWorkload.class
-                );
-            } else {
-                YearSummary newYear = YearSummary.builder()
-                        .year(year)
-                        .months(Collections.singletonList(new MonthSummary(month, duration)))
-                        .build();
+    private void addYearMonthIfNotExist (String username,int year, String month,int duration) {
+        Query yearQuery = new Query(Criteria.where("_id").is(username).and("years.year").is(year));
+        boolean yearExists = mongoTemplate.exists(yearQuery, TrainerWorkload.class);
 
-                mongoTemplate.updateFirst(
-                        new Query(Criteria.where("_id").is(username)),
-                        new Update().push("years", newYear),
-                        TrainerWorkload.class
-                );
-            }
+        if (yearExists) {
+            mongoTemplate.updateFirst(
+                    yearQuery,
+                    new Update().push("years.$.months", new MonthSummary(month, duration)),
+                    TrainerWorkload.class
+            );
+        } else {
+            YearSummary newYear = YearSummary.builder()
+                    .year(year)
+                    .months(Collections.singletonList(new MonthSummary(month, duration)))
+                    .build();
+
+            mongoTemplate.updateFirst(
+                    new Query(Criteria.where("_id").is(username)),
+                    new Update().push("years", newYear),
+                    TrainerWorkload.class
+            );
         }
     }
+}

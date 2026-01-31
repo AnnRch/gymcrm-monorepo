@@ -1,10 +1,9 @@
-package com.gymcrm.trainer_workload_service;
+package com.gymcrm.trainer_workload_service.service;
 
 import com.gymcrm.trainer_workload_service.dto.ActionType;
 import com.gymcrm.trainer_workload_service.dto.TrainerWorkloadRequest;
 import com.gymcrm.trainer_workload_service.entity.TrainerWorkload;
 import com.gymcrm.trainer_workload_service.repository.impl.CommandRepositoryImpl;
-import com.gymcrm.trainer_workload_service.service.WorkloadService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
